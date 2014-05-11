@@ -9,8 +9,6 @@ import time
 import os
 import platform
 import select
-from os.path import expanduser
-
 #---------------------------------------------- Différentes classes --------------------------------------------------------------------------#
 
 def repertory_stock():
@@ -55,32 +53,35 @@ def copylog(pseudo, messagefromclient):
         log.write('{0}:{1}:{2} <{3}> {4}\n'.format(str(now.tm_hour), str(now.tm_min), str(now.tm_sec), pseudo, messagefromclient))
     log.close()
 
-# Définitions des classes pour gérer la connexion client,
-# pour gérer des commandes.
-
 def liste_users(utilisateurs_conn):
-    liste_envoi = "kjergGKEZJZEN_çà-è_à)-è42112"
+    """Fonction qui permet de retourner la liste des utilisateurs connectés"""
+    liste_envoi = "kjergGKEZJZEN_çà-è_à)-è42112" # Utilisation d'un certain code pour que le client puisse filtrer ce message en tant que liste des utilisateurs connectés
     for utilisateur in utilisateurs_conn:
         liste_envoi = liste_envoi + "* " + utilisateur + "\n"
     for utilisateur in utilisateurs_conn:
-        utilisateurs_conn[utilisateur].send(liste_envoi.encode("Utf-8"))
+        utilisateurs_conn[utilisateur].send(liste_envoi.encode("Utf-8"))    
+    
+# Définitions des classes pour gérer la connexion client,
+# pour gérer des commandes.
 
 class ThreadClient(threading.Thread):
     '''Dérivation d'un objet thread pour gérer la connexion avec un client'''
     def __init__(self, connexion, pseudo):
+        """Fonction qui construit la classe héritant du module Thread"""
         threading.Thread.__init__(self)
         self.connexion = connexion
         self.pseudo = pseudo
 
     def run(self):
+        """Fonction qui sert à définir le code à lancer en parallèle"""
         # Dialogue avec le client
-        time.sleep(2)
-        liste_users(utilisateurs_conn)
-        while 1: # Attente permanente du message et si c'est commande /quit, sorti de boucle et déconnexion de l'utilisateur
+        time.sleep(1) # Attente de la connexion de l'utilisateur, pour ne pas avoir d'erreur
+        liste_users(utilisateurs_conn) # Envoi de la liste des utilisateurs à tout les utilisateurs connectés
+        while 1: # Attente permanente du message et si c'est commande /quit, on sort de boucle et déconnexion de l'utilisateur
             msgClient = self.connexion.recv(1024).decode("Utf8")
             if msgClient == "/quit":
-                break
-            message = "<{0}> {1}".format(self.pseudo, msgClient)
+                break # Permet de sortir de la boucle de réception des messages en cas de /quit
+            message = "<{0}> {1}".format(self.pseudo, msgClient) 
             copylog(self.pseudo, msgClient)
             now = time.localtime()
             print("{0}:{1}:{2}".format(str(now.tm_hour), str(now.tm_min), str(now.tm_sec)), message)
@@ -91,7 +92,7 @@ class ThreadClient(threading.Thread):
         self.connexion.close() # Couper la connexion côté serveur
         time.sleep(0.5)           # Timer pour attendre l'envoi des messages de fin à tous les utilisateurs pour le supprimer du dictionnaire sinon erreur.
         del utilisateurs_conn[self.pseudo]        # Supprimer son entrée dans le dictionnaire par rapport à son pseudo
-        del registre_adresses_users[self.pseudo]
+        del registre_adresses_users[self.pseudo] # Utilisation
         print("Client {0} déconnecté.".format(self.pseudo))
         copylog("Serveur", "Client {0} déconnecté.".format(self.pseudo))
         if comm_kick == False and comm_stop == False:
@@ -104,22 +105,24 @@ class ThreadClient(threading.Thread):
 class Commandes(threading.Thread):
     """ Dérivation objet thread qui gére les commandes côté serveur """
     def __init__(self):
+        """Fonction qui construit la classe héritant du module Thread"""
         threading.Thread.__init__(self)
 
     def run(self):
-        global registre_adresses_users
+        """Fonction qui sert à définir le code à lancer en parallèle"""
+        global registre_adresses_users # Permet d'avoir accès au variable définit dans le code principal
         global comm_kick
         global comm_stop
-        kick = "/quit"
-        while 1: # Attente permanente de commande avec test pour savoir laquelle est-ce !
+        
+        while 1: # Attente permanente de commande avec test pour savoir laquelle est-ce
             commande = input()
 
-        # Commande pour kicker toutes les personnes sur le server ( utile pour les MAJ ).
+        # Commande pour kicker toutes les personnes sur le server ( utile pour les MaJ ).
 
             if commande == "/kickall": # Commande qui déconnecte tous les utilsateurs
                 comm_kick = True
                 for utilisateur in utilisateurs_conn: # Envoi à tous les utilisateurs connectés '/quit' pour sortir de la boucle côté client
-                    utilisateurs_conn[utilisateur].send(kick.encode("Utf8"))
+                    utilisateurs_conn[utilisateur].send("/quit".encode("Utf8"))
                 time.sleep(2)
                 print("Tous les utilisateurs ont été kickés")
 
@@ -127,14 +130,14 @@ class Commandes(threading.Thread):
 
             if commande == "/stop": # En plus de déconnecter tout le monde, arrêt du serveur grâce à une simulation de connexion pour sortir boucle principale
                 comm_stop = True
-                socket_fin = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                socket_fin = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # On crée une connexion en local dans le but de sortir de la boucle principale de réception des connexions
                 socket_fin.connect(('127.0.0.1', Port))
-                socket_fin.send("Aegklerg1556442".encode("Utf-8"))
+                socket_fin.send("Aegklerg1556442".encode("Utf-8")) # Envoi d'un pseudo difficile à trouver pour ne pas couper le serveur intentionnellement
                 time.sleep(0.5)
                 socket_fin.close()
                 time.sleep(1)
                 for utilisateur in utilisateurs_conn:
-                    utilisateurs_conn[utilisateur].send(kick.encode("Utf8"))
+                    utilisateurs_conn[utilisateur].send"/quit".encode("Utf8"))
                 time.sleep(2)
                 print("Tous les utilisateurs ont été kickés et le serveur va s'arrêter !")
                 copylog("Serveur", "Fermeture du serveur.")
@@ -153,7 +156,7 @@ class Commandes(threading.Thread):
                             black_list = open("blacklist.txt", "a")
                             black_list.write(adresse_ban + "\n")
                             black_list.close()
-                            utilisateurs_conn[user].send(kick.encode("Utf8"))
+                            utilisateurs_conn[user].send("/quit".encode("Utf8"))
                             print("L'utilisateur {0} a bien été banni !".format(pseudo_ban))
                             break
                     print("Utilisateur {0} introuvable".format(pseudo_ban))
@@ -171,8 +174,8 @@ Hote = ''
 Port = 45000
 socketServeur = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 socketServeur.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # Permet de réutiliser le socket tout de suite après fermeture
-# Essai de liaison avec l'adresse et le port
 
+# Essai de liaison avec l'adresse et le port
 try:
     socketServeur.bind((Hote, Port))
     print("Serveur prêt, en attente d'utilisateurs ...\n")
@@ -183,15 +186,14 @@ except socket.error:
 socketServeur.listen(5)
 
 utilisateurs_conn = {}                # dictionnaire des utilisateurs connectés par pseudo avec la référence du socket connexion_avec_client
-registre_adresses_users = {}
+registre_adresses_users = {} # Dictionnaire qui ne conserve que l'adresse IP de l'utilisateur 
 comm = Commandes()
-comm.start()        # lancement thread qui gére les commandes
+comm.start()        # Lancement thread qui gére les commandes
 
 repertory_stock() # Lancement création des dossiers nécessaires pour les logs
-check_pseudo = "again" #Variable initialisation pour vérification de pseudos
-pseudo = ""
-ban_or_not = False
-connexion_avec_client = None
+check_pseudo = "again" # Variable initialisation pour vérification de pseudos
+pseudo = "" # Utilisation d'un pseudo vide si l'utilisateur n'a pas entré de pseudo
+ban_or_not = False # Initialisation 
 comm_kick = False
 comm_stop = False
 # Boucle qui gère toutes les connexions entrantes :
@@ -219,8 +221,8 @@ while 1:
         connexion_avec_client.send("autorisé".encode("Utf-8")) # Autorisation de se connecter
 
     while check_pseudo == "again": # Boucle vérif. pseudos
-        check_lecture, wlist, xlist = select.select([connexion_avec_client], [], [], 30)
-        if len(check_lecture) > 0:
+        check_lecture, wlist, xlist = select.select([connexion_avec_client], [], [], 30) # Permet d'attendre une réponse du client et s'il n'en donne pas avant 30 secondes, il est kické
+        if len(check_lecture) > 0: # check_lecture est la liste des sockets qui ont envoyé une réponse donc si il n'y en a pas, on ne demande pas le pseudo
             try: # Test si pas de pseudo on break
                 pseudo = connexion_avec_client.recv(1024).decode("Utf-8") #Réception du pseudo
             except:
@@ -254,10 +256,9 @@ while 1:
     thread_client = ThreadClient(connexion_avec_client, pseudo)
     thread_client.start() # Créer un nouvel objet thread pour gérer la connexion :
     utilisateurs_conn[pseudo] = connexion_avec_client # Entrée de la connexion dans le dictionnaire avec son pseudo comme clé
-    registre_adresses_users[pseudo] = adresse_port[0]
+    registre_adresses_users[pseudo] = adresse_port[0] #Entrée de l'adresse de l'utilisateur dans le dictionnaire pour pouvoir le ban si besoin
     info_connexion = "Client {0} connecté, adresse IP {1}, port {2}.".format(pseudo, adresse_port[0], adresse_port[1])
     print(info_connexion)
     copylog("Serveur", info_connexion)
     msg ="<Serveur> Vous êtes connecté(e) au serveur de chat GATchat."
     connexion_avec_client.send(msg.encode("Utf8"))
-    connexion_avec_client = None

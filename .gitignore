@@ -216,3 +216,6 @@ pip-log.txt
 
 Log_serveur/
 Log_client/
+
+/memoire_pseudo.txt
+/blacklist.txt

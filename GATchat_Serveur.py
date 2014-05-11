@@ -137,7 +137,7 @@ class Commandes(threading.Thread):
                 socket_fin.close()
                 time.sleep(1)
                 for utilisateur in utilisateurs_conn:
-                    utilisateurs_conn[utilisateur].send"/quit".encode("Utf8"))
+                    utilisateurs_conn[utilisateur].send("/quit".encode("Utf8"))
                 time.sleep(2)
                 print("Tous les utilisateurs ont été kickés et le serveur va s'arrêter !")
                 copylog("Serveur", "Fermeture du serveur.")

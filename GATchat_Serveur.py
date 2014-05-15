@@ -78,7 +78,12 @@ class ThreadClient(threading.Thread):
         time.sleep(1) # Attente de la connexion de l'utilisateur, pour ne pas avoir d'erreur
         liste_users(utilisateurs_conn) # Envoi de la liste des utilisateurs à tout les utilisateurs connectés
         while 1: # Attente permanente du message et si c'est commande /quit, on sort de boucle et déconnexion de l'utilisateur
-            msgClient = self.connexion.recv(1024).decode("Utf8")
+            try: # Bloc try pour prévenir les crashs du client
+                msgClient = self.connexion.recv(1024).decode("Utf8")
+            except:
+                print("<Serveur> Une erreur est survenue lors de la réception du message venant de {0}".format(self.pseudo))
+                copylog("<Serveur>", "Une erreur est survenue lors de la réception du message venant de {0}".format(self.pseudo))
+                break
             if msgClient == "/quit":
                 break # Permet de sortir de la boucle de réception des messages en cas de /quit
             message = "<{0}> {1}".format(self.pseudo, msgClient) 
@@ -95,7 +100,7 @@ class ThreadClient(threading.Thread):
         del registre_adresses_users[self.pseudo] # Utilisation
         print("Client {0} déconnecté.".format(self.pseudo))
         copylog("Serveur", "Client {0} déconnecté.".format(self.pseudo))
-        if comm_kick == False and comm_stop == False:
+        if comm_kick == False and comm_stop == False: # On n'envoie pas ce message si l'on demande un /kick ou /stop car peut flood
             for utilisateur in utilisateurs_conn:
                 utilisateurs_conn[utilisateur].send("<Serveur> {0} s'est déconnecté(e).".format(self.pseudo).encode("Utf8"))
         time.sleep(0.5)

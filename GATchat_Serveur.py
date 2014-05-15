@@ -234,8 +234,12 @@ while 1:
         check_pseudo = "good" # Changement état pour sortir de la boucle si pseudo existe pas
         if pseudo == "Aegklerg1556442": # Sert pour /stop, c'est le pseudo de la connexion entrante qui permet la sortie de cette boucle
             break
+        if pseudo == "Serveur":  # On empêche les utilisateurs de s'appeler Serveur, on le réserve pour les messages systèmes
+            check_pseudo = "again"
+            connexion_avec_client.send(check_pseudo.encode("Utf-8"))
+            continue
         for name in utilisateurs_conn: # Parcours de la liste des pseudos et on remet "again" pour relancer la boucle si pseudo présent
-            if name == pseudo or name == "Serveur":
+            if name == pseudo:
                 check_pseudo = "again"
 
         connexion_avec_client.send(check_pseudo.encode("Utf-8")) # Renvoie de "again" ou de "good" au client pour sortir ou nom de la boucle lui aussi

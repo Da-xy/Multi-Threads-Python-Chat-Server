@@ -60,6 +60,20 @@ def copylog(messagefromclient):
         log.write('{0}:{1}:{2} {3}\n'.format(str(now.tm_hour), str(now.tm_min), str(now.tm_sec), messagefromclient))
     log.close()
 
+
+def Fermeture():
+    global ferm_prog
+    global deco_prog
+    ferm_prog = True
+    if deco_prog == False:
+        connexion.send("/quit".encode("Utf-8"))
+        deco_prog = True
+        fenetre_prin.quit()
+    else:
+        fenetre_prin.quit()
+    copylog("Déconnexion du serveur")
+    
+
 class ThreadReception(threading.Thread):
     """objet thread gérant la réception des messages"""
     def __init__(self, conn, zone_mess, fenetre, aff_users):
@@ -292,25 +306,6 @@ port = 45000
 repertory_stock() # Lancement création des dossiers nécessaires pour logs
 deco_prog = False
 ferm_prog = False
-
-
-
-#-------------------------- Interface graphique -------------------------------------------------------------#
-
-# Fenetre pour pseudo
-
-def Fermeture():
-    global ferm_prog
-    global deco_prog
-    ferm_prog = True
-    if deco_prog == False:
-        connexion.send("/quit".encode("Utf-8"))
-        deco_prog = True
-        fenetre_prin.quit()
-    else:
-        fenetre_prin.quit()
-    copylog("Déconnexion du serveur")
-
 
 
 while 1: # Boucle principale qui gère les reconnexions.

@@ -28,7 +28,7 @@ def repertory_stock():
             if not os.path.exists("Log_client/{0}".format(str(now.tm_year))):
                 os.mkdir("Log_client/{0}".format(str(now.tm_year)))            
                 for i in range(12):
-                    if not os.path.exists("Log_client/{0}/{1}".format(str(now.tm_year), str(i+1))):
+                    if not os.path.exists("Log_client/{0}/{1nn}".format(str(now.tm_year), str(i+1))):
                         os.mkdir("Log_client/{0}/{1}".format(str(now.tm_year), str(i +1)))
                         for k in range(31):                    
                             if not os.path.isfile("Log_client/{0}/{1}/logdu{2}.txt".format(str(now.tm_year), str(i+1), str(k+1))):
@@ -312,6 +312,7 @@ while 1: # Boucle principale qui gère les reconnexions.
     connexion = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     
     fenetre_prin = Tk() # Fenêtre principale du chat !
+    
     fenetre_prin.title('GAT Chat 1.0 Alpha.')
     fenetre_prin.columnconfigure(0, weight=1)
     fenetre_prin.rowconfigure(0, weight=1)
@@ -320,7 +321,7 @@ while 1: # Boucle principale qui gère les reconnexions.
         connexion.connect((hote, port)) # Essai de connexion au serveur
     except socket.error:
         print("La connexion a échoué. Tentative de connexion.")
-        if askyesno("Connexion perdue", "Voulez-vous vous reconnecter ?"): # Permet si la réponse et oui de revenir au début et recréer un connexion
+        if askyesno("Connexion perdue", "Voulez-vous vous reconnecter ?"): # Permet si la réponse est oui de revenir au début et recréer une connexion
             fenetre_prin.destroy() # Suppression de la fenêtre pour éviter de dupliquer la fenêtre
             time.sleep(2)
             continue
@@ -336,14 +337,13 @@ while 1: # Boucle principale qui gère les reconnexions.
     print("Connexion établie avec le serveur.")
     copylog("Connexion établie avec le serveur.")
     
-    #showinfo("Pseudonyme", "Vous devez entrez votre pseudo !")
     fenetre_pseudo = FenetrePseudo(fenetre_prin) # Frame qui permet la gestion du pseudo
     fenetre_prin.mainloop()
     fenetre_pseudo.frame_pseudo.destroy()
 
     fenetre_chat = FenetreChat(fenetre_prin, connexion) # Frame qui permet l'émission et la réception de messages
 
-    fenetre_prin.protocol("WM_DELETE_WINDOW", Fermeture) # Modifie les conditions de fermetures de la feneêtre avec la croix rouge.
+    fenetre_prin.protocol("WM_DELETE_WINDOW", Fermeture) # Modifie les conditions de fermetures de la fenêtre avec la croix rouge.
     
     fenetre_prin.mainloop() # Boucle principale pendant le temps de l'émission des messages.
     

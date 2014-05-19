@@ -28,7 +28,7 @@ def repertory_stock():
             if not os.path.exists("Log_client/{0}".format(str(now.tm_year))):
                 os.mkdir("Log_client/{0}".format(str(now.tm_year)))            
                 for i in range(12):
-                    if not os.path.exists("Log_client/{0}/{1nn}".format(str(now.tm_year), str(i+1))):
+                    if not os.path.exists("Log_client/{0}/{1}".format(str(now.tm_year), str(i+1))):
                         os.mkdir("Log_client/{0}/{1}".format(str(now.tm_year), str(i +1)))
                         for k in range(31):                    
                             if not os.path.isfile("Log_client/{0}/{1}/logdu{2}.txt".format(str(now.tm_year), str(i+1), str(k+1))):
@@ -91,7 +91,7 @@ class ThreadReception(threading.Thread):
             verif_mess = self.message_recu.split("kjergGKEZJZEN_çà-è_à)-è42112") # On split pour vérifier que c'est la véritable liste selon le code fournit
                                                                                  # par le serveur
             
-            if not self.message_recu or self.message_recu == "/quit":
+            if self.message_recu == "" or self.message_recu == "/quit": # Lors de la fermeture de la connexion le serveur envoie une chaine vide, cela veut 
                 self.connexion.send(self.message_recu.encode("Utf8"))
                 break
             elif len(verif_mess) > 1:
@@ -119,9 +119,8 @@ class ThreadReception(threading.Thread):
             self.zone_mess.config(state = NORMAL)
             self.zone_mess.insert(END, "\nLa connexion a été interrompue. Veuillez vous reconnecter.")
             self.zone_mess.config(state = DISABLED)
-            test_reco=askyesno("Connexion perdue", "Voulez-vous vous reconnecter ?")
             
-            if test_reco == True:
+            if askyesno("Connexion perdue", "Voulez-vous vous reconnecter ?"):
                 fenetre_prin.quit()
             else:
                 deco_prog = True
@@ -140,18 +139,15 @@ class ThreadReception(threading.Thread):
         
         message = mess.split("> ")
         message_str = ""
-        k = 1
-        for loop in range(len(message)-1):
-            if len(message) > 2 and message[k] == "" and (k == 1 or (k > 1 and k < len(message)-1)):
-                message_str = message_str + message[k] + "> "
-            elif len(message) > 2 and message[k] != ""  and k < len(message)-1:
-                message_str = message_str + message[k] + "> "
-            else: 
-                message_str = message_str + message[k]
-            k += 1
+        if len(message) > 2:
+            for loop in range(len(message)-2):               
+                message_str = message_str + message[loop + 1] + "> "
+            if message[len(message)-1] != "":
+                message_str = message_str + message[len(message)-1]
+        else:
+            message_str = message_str + message[1]
         
         mess_modifie = [pseudo, message_str]
-        
         return mess_modifie
         
         

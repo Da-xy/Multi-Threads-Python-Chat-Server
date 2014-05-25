@@ -164,7 +164,7 @@ class Commandes(threading.Thread):
                             utilisateurs_conn[user].send("/quit".encode("Utf8"))
                             print("L'utilisateur {0} a bien été banni !".format(pseudo_ban))
                             break
-                    print("Utilisateur {0} introuvable".format(pseudo_ban))
+                        print("Utilisateur {0} introuvable".format(pseudo_ban))
                 except:
                     print("Aucun utilisateur n'est connecté !")
 
